@@ -316,3 +316,126 @@ func TestBrowseJson(t *testing.T) {
 		}
 	}
 }
+func BenchmarkBrowseWithoutLimitAndOrder(b *testing.B) {
+	browse := Browse{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+
+			return 0, nil
+		}),
+		Root: "./testdata",
+		Configs: []Config{
+			{
+				PathScope: "/photos/",
+			},
+		},
+	}
+	req, err := http.NewRequest("GET", "/photos/?limit=3&order=desc", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	rec := httptest.NewRecorder()
+
+	for n := 0; n < b.N; n++ {
+		code, err := browse.ServeHTTP(rec, req)
+		if err != nil {
+			panic(err)
+		}
+		if code != http.StatusOK {
+			panic("staTUS NOT OK")
+		}
+	}
+}
+func BenchmarkBrowseWithLimit(b *testing.B) {
+	browse := Browse{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+
+			return 0, nil
+		}),
+		Root: "./testdata",
+		Configs: []Config{
+			{
+				PathScope: "/photos/",
+			},
+		},
+	}
+	req, err := http.NewRequest("GET", "/photos/?limit=3", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	rec := httptest.NewRecorder()
+
+	for n := 0; n < b.N; n++ {
+		code, err := browse.ServeHTTP(rec, req)
+		if err != nil {
+			panic(err)
+		}
+		if code != http.StatusOK {
+			panic("staTUS NOT OK")
+		}
+	}
+}
+
+func BenchmarkBrowseWithOrder(b *testing.B) {
+	browse := Browse{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+
+			return 0, nil
+		}),
+		Root: "./testdata",
+		Configs: []Config{
+			{
+				PathScope: "/photos/",
+			},
+		},
+	}
+	req, err := http.NewRequest("GET", "/photos/?order=desc", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	rec := httptest.NewRecorder()
+
+	for n := 0; n < b.N; n++ {
+		code, err := browse.ServeHTTP(rec, req)
+		//if check for incorrectness is not made then its not possible to becnhamrk the intended functionality
+		//the check also gives an inditation if function fails due to stress when run inside benchmark
+		if err != nil {
+			b.Fatal(err.Error())
+		}
+		if code != http.StatusOK {
+			b.Fatal("Status not OK")
+		}
+	}
+}
+func BenchmarkBrowseWithLimitAndOrder(b *testing.B) {
+	browse := Browse{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+
+			return 0, nil
+		}),
+		Root: "./testdata",
+		Configs: []Config{
+			{
+				PathScope: "/photos/",
+			},
+		},
+	}
+	req, err := http.NewRequest("GET", "/photos/?limit=3&order=desc", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Accept", "application/json")
+	rec := httptest.NewRecorder()
+
+	for n := 0; n < b.N; n++ {
+		code, err := browse.ServeHTTP(rec, req)
+		if err != nil {
+			panic(err)
+		}
+		if code != http.StatusOK {
+			panic("Response status not OK")
+		}
+	}
+}

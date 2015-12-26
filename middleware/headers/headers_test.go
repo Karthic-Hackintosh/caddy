@@ -48,3 +48,32 @@ func TestHeaders(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkHeaders(b *testing.B) {
+	he := Headers{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+			return 0, nil
+		}),
+		Rules: []Rule{
+			{Path: "/a", Headers: []Header{
+				{Name: "Foo", Value: "Bar"},
+				{Name: "-Bar"},
+			}},
+		},
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	if err != nil {
+		b.Fatalf(" Could not create HTTP request")
+	}
+
+	rec := httptest.NewRecorder()
+	rec.Header().Set("Bar", "Removed in /a") //this is to make sure that the header remove ops is also considered, see the rule -Bar
+	for n := 0; n < b.N; n++ {
+		_, err := he.ServeHTTP(rec, req)
+		if err != nil {
+			b.Fatal(err.Error())
+		}
+	}
+
+}
