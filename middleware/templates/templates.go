@@ -3,13 +3,13 @@ package templates
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/mholt/caddy/middleware"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"text/template"
-
-	"github.com/mholt/caddy/middleware"
 )
 
 // ServeHTTP implements the middleware.Handler interface.
@@ -23,6 +23,7 @@ func (t Templates) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error
 		fpath := r.URL.Path
 		if idx, ok := middleware.IndexFile(t.FileSys, fpath, rule.IndexFiles); ok {
 			fpath = idx
+			fmt.Printf("\nInside fpath %v\n", fpath)
 		}
 
 		// Check the extension
