@@ -1,12 +1,12 @@
 package caddy
 
 import (
+	"github.com/davecheney/profile"
+	"github.com/mholt/caddy/server"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
-
-	"github.com/mholt/caddy/server"
 )
 
 // TrapSignals create signal handlers for all applicable signals for this
@@ -23,13 +23,20 @@ func TrapSignals() {
 // shutdown that executes shutdown callbacks first. A second interrupt
 // signal will exit the process immediately.
 func trapSignalsCrossPlatform() {
+	cfg := profile.Config{
+		CPUProfile:     true,
+		NoShutdownHook: true, // do not hook SIGINT
+	}
+	// p.Stop() must be called before the program exits to
+	// ensure profiling information is written to disk.
+	p := profile.Start(&cfg)
 	go func() {
 		shutdown := make(chan os.Signal, 1)
 		signal.Notify(shutdown, os.Interrupt)
 
 		for i := 0; true; i++ {
 			<-shutdown
-
+			p.Stop() //stopping profiling
 			if i > 0 {
 				log.Println("[INFO] SIGINT: Force quit")
 				os.Exit(1)

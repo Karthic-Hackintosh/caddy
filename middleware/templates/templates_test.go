@@ -144,3 +144,49 @@ func Test(t *testing.T) {
 		t.Fatalf("Test: the expected body %v is different from the response one: %v", expectedBody, respBody)
 	}
 }
+
+func BenchmarkTemplates(b *testing.B) {
+	tmpl := Templates{
+		Next: middleware.HandlerFunc(func(w http.ResponseWriter, r *http.Request) (int, error) {
+			return 0, nil
+		}),
+		Rules: []Rule{
+			{
+				Extensions: []string{".html"},
+				IndexFiles: []string{"index.html"},
+				Path:       "/photos",
+			},
+			{
+				Extensions: []string{".html", ".htm"},
+				IndexFiles: []string{"index.html", "index.htm"},
+				Path:       "/images",
+				Delims:     [2]string{"{%", "%}"},
+			},
+		},
+		Root:    "./testdata",
+		FileSys: http.Dir("./testdata"),
+	}
+	req, err := http.NewRequest("GET", "/photos/test.html", nil)
+	if err != nil {
+		b.Fatalf("Test: Could not create HTTP request: %v", err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		rec := httptest.NewRecorder()
+		tmpl.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			b.Fatalf("Test: Wrong response code: %d, should be %d", rec.Code, http.StatusOK)
+		}
+
+		respBody := rec.Body.String()
+		expectedBody := `<!DOCTYPE html><html><head><title>test page</title></head><body><h1>Header title</h1>
+</body></html>
+`
+
+		if respBody != expectedBody {
+			b.Fatalf("Test: the expected body %v is different from the response one: %v", expectedBody, respBody)
+		}
+
+	}
+}
