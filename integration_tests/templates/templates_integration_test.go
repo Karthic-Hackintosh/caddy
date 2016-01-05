@@ -2,19 +2,10 @@ package integration_tests
 
 import (
 	"fmt"
-
 	"github.com/mholt/caddy/caddy"
-	//"github.com/mholt/caddy/middleware"
-	//"encoding/json"
-	//"github.com/mholt/caddy/middleware/browse"
 	"io/ioutil"
 	"net/http"
-	//"net/url"
-	//"os"
-	//"path/filepath"
 	"testing"
-	//"time"
-	//"time"
 )
 
 func TestBrowseMiddlewareForHtmlResponse(t *testing.T) {
@@ -32,7 +23,7 @@ func TestBrowseMiddlewareForHtmlResponse(t *testing.T) {
 	}
 
 	client := &http.Client{}
-	httpReq, err := http.NewRequest("GET", "http://127.0.0.1:2016/testdata/photos/test.html", nil)
+	httpReq, err := http.NewRequest("GET", "http://127.0.0.1:2016/testdata/photos/", nil)
 	if err != nil {
 		t.Fatal("GET: invalid Url or Request failed")
 	}
@@ -47,31 +38,14 @@ func TestBrowseMiddlewareForHtmlResponse(t *testing.T) {
 	}
 	defer r.Body.Close()
 	respBody := string(data)
-	//asserting the response status code
-	// if r.StatusCode != http.StatusOK {
-	// 	t.Fatalf("Wrong status, expected %d, got %d", http.StatusOK, r.StatusCode)
-	// }
-	// 	expectedBody := `<!DOCTYPE html>
-	// <html>
-	// <head>
-	// <title>Template</title>
-	// </head>
-	// <body>
-	// <h1>Header</h1>
-	// <h1>/testdata/photos/</h1>
-	//
-	// <a href="test.html">test.html</a><br>
-	//
-	// <a href="test2.html">test2.html</a><br>
-	//
-	// <a href="test3.html">test3.html</a><br>
-	//
-	// </body>
-	// </html>
-	// `
-	t.Logf("\nresponse %s\n ", respBody)
-	// if respBody != expectedBody {
-	// 	t.Fatalf("Expected body: %v got: %v", expectedBody, respBody)
-	// }
+
+	expectedBody := `<!DOCTYPE html><html><head><title>test page</title></head><body><h1>Header title</h1>
+</body></html>
+`
+		
+	if respBody != expectedBody {
+		t.Fatalf("Test: the expected body\n%v is different from the response one: \n%v", expectedBody, respBody)
+	}
+
 	caddy.Stop()
 }
